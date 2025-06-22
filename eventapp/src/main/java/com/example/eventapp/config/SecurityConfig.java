@@ -1,5 +1,6 @@
 package com.example.eventapp.config;
 
+import com.example.eventapp.security.JwtAuthEntryPoint;
 import com.example.eventapp.security.JwtFilter;
 
 import java.lang.annotation.Documented;
@@ -22,10 +23,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class SecurityConfig {
 
+    private final JwtAuthEntryPoint jwtAuthEntryPoint;
+
     private final JwtFilter jwtFilter;
 
-    public SecurityConfig(JwtFilter jwtFilter) {
+    public SecurityConfig(JwtFilter jwtFilter, JwtAuthEntryPoint jwtAuthEntryPoint) {
         this.jwtFilter = jwtFilter;
+        this.jwtAuthEntryPoint = jwtAuthEntryPoint;
     }
 
     @Bean
@@ -33,8 +37,11 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/v1/auth/register", "/v1/auth/login").permitAll()
+                        .requestMatchers("/v1/auth/register", "/v1/auth/login","/v1/admin/auth/login", "/v1/common/*").permitAll()
                         .anyRequest().authenticated())
+                         .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(jwtAuthEntryPoint) // ✅ Custom response for unauth
+                )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

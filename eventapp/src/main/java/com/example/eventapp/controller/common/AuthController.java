@@ -1,4 +1,4 @@
-package com.example.eventapp.controller.commonController;
+package com.example.eventapp.controller.common;
 
 import com.example.eventapp.payload.ApiResponse;
 import com.example.eventapp.payload.AuthDto.AuthResponse;
