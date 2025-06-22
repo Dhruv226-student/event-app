@@ -19,7 +19,8 @@ public class FileUploadController {
     @PostMapping("/upload")
     public ResponseEntity<?> uploadMedia(@RequestParam("file") MultipartFile file) {
         try {
-            Map uploadResult = cloudinaryService.uploadFile(file, "manager-media");
+            
+            Map<String, Object> uploadResult = (Map<String, Object>) cloudinaryService.uploadFile(file, "manager-media");
             return ResponseEntity.ok().body(uploadResult);
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body("Upload failed: " + e.getMessage());

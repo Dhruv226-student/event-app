@@ -1,8 +1,7 @@
 package com.example.eventapp.controller.common;
 
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
+
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.example.eventapp.services.cloud.CloudinaryService;
@@ -12,11 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import com.example.eventapp.model.TeamApplication;
 import com.example.eventapp.payload.ApiResponse;
-import com.example.eventapp.payload.ApplicationDto;
 import com.example.eventapp.payload.ApplicationDto;
 import com.example.eventapp.repository.ApplayMangerRepository;
 
@@ -51,7 +48,8 @@ public ResponseEntity<ApiResponse<TeamApplication>> applyManager(
     String publicId = null;
 
     if (logo != null && !logo.isEmpty()) {
-        Map uploadResult = cloudinaryService.uploadFile(logo, "ManagerMedia");
+        
+        Map<String, Object> uploadResult = (Map<String, Object>) cloudinaryService.uploadFile(logo, "ManagerMedia");
         System.out.println("Upload Result: " + uploadResult);
 
         if (uploadResult != null) {

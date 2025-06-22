@@ -16,8 +16,9 @@ public class CloudinaryService {
     @Autowired
     private Cloudinary cloudinary;
 
-    public Map uploadFile(MultipartFile file, String folder) throws IOException {
-        return cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> uploadFile(MultipartFile file, String folder) throws IOException {
+        return (Map<String, Object>) cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
                 "folder", folder,
                 "resource_type", "auto",     // handles image/video
                 "overwrite", true
@@ -25,8 +26,9 @@ public class CloudinaryService {
     }
 
         // ✅ For videos
-   public Map uploadFile(MultipartFile file, String folder, String resourceType) throws IOException {
-    return cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+   @SuppressWarnings("unchecked")
+   public Map<String, Object> uploadFile(MultipartFile file, String folder, String resourceType) throws IOException {
+    return (Map<String, Object>) cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
             "folder", folder,
             "resource_type", resourceType,
             "overwrite", true
@@ -36,7 +38,8 @@ public class CloudinaryService {
 public String deleteFile(String publicId) throws IOException {
     // Try deleting as image first
     Map<String, Object> imageOptions = new HashMap<>();
-    Map imageResult = cloudinary.uploader().destroy(publicId, imageOptions);
+    @SuppressWarnings("unchecked")
+    Map<String, Object> imageResult = (Map<String, Object>) cloudinary.uploader().destroy(publicId, imageOptions);
 
     String resultStatus = (String) imageResult.get("result");
 
@@ -49,7 +52,8 @@ public String deleteFile(String publicId) throws IOException {
         Map<String, Object> videoOptions = new HashMap<>();
         videoOptions.put("resource_type", "video");
 
-        Map videoResult = cloudinary.uploader().destroy(publicId, videoOptions);
+        @SuppressWarnings("unchecked")
+        Map<String, Object> videoResult = (Map<String, Object>) cloudinary.uploader().destroy(publicId, videoOptions);
         String videoStatus = (String) videoResult.get("result");
 
         if (!"ok".equals(videoStatus)) {

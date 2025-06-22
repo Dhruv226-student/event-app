@@ -54,28 +54,26 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElse(null);
+ @PostMapping("/login")
+public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
+    User user = userRepository.findByEmail(request.getEmail())
+            .orElse(null);
 
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new AuthResponse(null, null, null, "Invalid credentials", null));
-        }
-
-        String token = jwtProvider.generateToken(user);
-
-        // String token = JwtProvider.generateToken(user);
-
-        AuthResponse response = new AuthResponse(
-                token,
-                String.valueOf(user.getId()),
-                user.getUsername(),
-                user.getEmail(),
-                user.getRole());
-
-        return ResponseEntity.ok(response);
+    if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ApiResponse<>(false, "Invalid credentials", null));
     }
+
+    String token = jwtProvider.generateToken(user);
+
+    AuthResponse response = new AuthResponse(
+            token,
+            String.valueOf(user.getId()),
+            user.getUsername(),
+            user.getEmail(),
+            user.getRole());
+
+    return ResponseEntity.ok(new ApiResponse<>(true, "Login successful", response));
+}
 
 }

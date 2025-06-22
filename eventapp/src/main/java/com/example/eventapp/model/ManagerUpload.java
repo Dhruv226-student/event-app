@@ -23,7 +23,7 @@ public class ManagerUpload {
 
     private ObjectId managerId; // Who uploaded this
 
-    private String type; // SINGLE or MULTIPLE
+    private String type;
 
     private String title;
     private String description;

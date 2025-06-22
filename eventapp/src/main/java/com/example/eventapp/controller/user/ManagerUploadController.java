@@ -18,8 +18,6 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
@@ -55,8 +53,8 @@ public class ManagerUploadController {
 
         if (request.getImages() != null) {
             for (MultipartFile img : request.getImages()) {
-                Map<String, Object> result = cloudinaryService.uploadFile(img, folder);
-            System.out.println("Upload Result: " + result);
+                
+                Map<String, Object> result = (Map<String, Object>) cloudinaryService.uploadFile(img, folder);
                 mediaItems.add(MediaItem.builder()
                         .type("image")
                         .url(result.get("url").toString())
@@ -67,7 +65,8 @@ public class ManagerUploadController {
 
         if (request.getVideos() != null) {
             for (MultipartFile vid : request.getVideos()) {
-                Map<String, Object> result = cloudinaryService.uploadFile(vid, folder, "video");
+                
+                Map<String, Object> result = (Map<String, Object>) cloudinaryService.uploadFile(vid, folder, "video");
                 mediaItems.add(MediaItem.builder()
                         .type("video")
                         .url(result.get("url").toString())
@@ -79,9 +78,9 @@ public class ManagerUploadController {
         ManagerUpload upload = ManagerUpload.builder()
                 .managerId(new ObjectId(manager.getId()))
                 .type(request.getType())
+                .eventDate(request.getEventDate())
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .eventDate(null) // optional in create, or can be added if in DTO
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .media(mediaItems)
@@ -131,7 +130,8 @@ System.out.println("Current media: " + updatedMedia);
 
         if (request.getNewImages() != null) {
             for (MultipartFile img : request.getNewImages()) {
-                Map<String, Object> result = cloudinaryService.uploadFile(img, folder, "image");
+                
+                Map<String, Object> result = (Map<String, Object>) cloudinaryService.uploadFile(img, folder, "image");
                 updatedMedia.add(MediaItem.builder()
                         .type("image")
                         .url(result.get("url").toString())
@@ -142,7 +142,8 @@ System.out.println("Current media: " + updatedMedia);
 
         if (request.getNewVideos() != null) {
             for (MultipartFile vid : request.getNewVideos()) {
-                Map<String, Object> result = cloudinaryService.uploadFile(vid, folder, "video");
+                
+                Map<String, Object> result = (Map<String, Object>) cloudinaryService.uploadFile(vid, folder, "video");
                 updatedMedia.add(MediaItem.builder()
                         .type("video")
                         .url(result.get("url").toString())

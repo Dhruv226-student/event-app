@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 
 @RestController
 @RequestMapping("/v1/user")
@@ -116,7 +115,7 @@ public class UserController {
             }
 
             // Upload new image
-            Map uploadResult = cloudinaryService.uploadFile(logo, "ManagerMedia");
+            Map<String, Object> uploadResult = (Map<String, Object>) cloudinaryService.uploadFile(logo, "ManagerMedia");
 
             if (uploadResult != null && uploadResult.get("url") != null) {
                 newLogoUrl = uploadResult.get("url").toString();
