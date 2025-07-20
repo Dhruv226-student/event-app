@@ -8,6 +8,8 @@ import com.example.eventapp.model.TeamApplication;
 import com.example.eventapp.model.User;
 import com.example.eventapp.payload.ApiResponse;
 import com.example.eventapp.payload.ApplicationDto;
+import com.example.eventapp.payload.AuthDto.ForgotPasswordRequest;
+import com.example.eventapp.payload.AuthDto.ResetPasswordRequest;
 import com.example.eventapp.payload.AuthDto.updatePassword;
 import com.example.eventapp.payload.UserDto;
 import com.example.eventapp.repository.ApplayMangerRepository;
@@ -19,17 +21,23 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @RestController
 @RequestMapping("/v1/user")
@@ -43,12 +51,15 @@ public class UserController {
 
     private final ApplayMangerRepository applayMangerRepository;
 
+    private final JavaMailSender mailSender;
+
     UserController(ApplayMangerRepository applayMangerRepository, CloudinaryService cloudinaryService,
-            PasswordEncoder passwordEncoder, UserRepository userRepository) {
+            PasswordEncoder passwordEncoder, UserRepository userRepository, JavaMailSender mailSender) {
         this.applayMangerRepository = applayMangerRepository;
         this.cloudinaryService = cloudinaryService;
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
+        this.mailSender = mailSender;
     }
 
     @GetMapping("/details")
@@ -157,5 +168,67 @@ public class UserController {
 
         return ResponseEntity.ok(new ApiResponse<>(true, "Password updated successfully", null));
     }
+
+
+
+
+    
+
+ @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
+
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, "User with this email not found", null));
+        }
+
+        User user = optionalUser.get();
+
+        // Generate reset token
+        String token = UUID.randomUUID().toString();
+        user.setResetToken(token);
+        user.setResetTokenExpiry(LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
+
+        // Send Email
+        String subject = "Password Reset Request";
+        String resetLink = "http://localhost:3000/reset-password?token=" + token; // Adjust frontend URL
+        String message = "Hi " + user.getUsername() + ",\n\nClick the link below to reset your password:\n" + resetLink;
+
+        SimpleMailMessage email = new SimpleMailMessage();
+        email.setTo(user.getEmail());
+        email.setSubject(subject);
+        email.setText(message);
+
+        mailSender.send(email);
+
+        return ResponseEntity.ok(new ApiResponse<>(true, "Reset email sent successfully", null));
+    }
+
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    Optional<User> optionalUser = userRepository.findByResetToken(request.getToken());
+
+    if (optionalUser.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(false, "Invalid or expired token", null));
+    }
+
+    User user = optionalUser.get();
+
+    if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(false, "Token has expired", null));
+    }
+
+    user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+    user.setResetToken(null);
+    user.setResetTokenExpiry(null);
+    userRepository.save(user);
+
+    return ResponseEntity.ok(new ApiResponse<>(true, "Password reset successfully", null));
+}
 
 }

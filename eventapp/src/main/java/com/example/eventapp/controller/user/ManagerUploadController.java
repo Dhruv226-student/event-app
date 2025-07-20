@@ -21,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -38,9 +37,9 @@ public class ManagerUploadController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ManagerUpload>> upload(
-        @ModelAttribute ManagerUploadDto request,
-        @CurrentUser User manager
-        // @currentUser User user,
+            @ModelAttribute ManagerUploadDto request,
+            @CurrentUser User manager
+    // @currentUser User user,
     ) throws IOException {
 
         if (!"MANAGER".equals(manager.getRole())) {
@@ -53,7 +52,7 @@ public class ManagerUploadController {
 
         if (request.getImages() != null) {
             for (MultipartFile img : request.getImages()) {
-                
+
                 Map<String, Object> result = (Map<String, Object>) cloudinaryService.uploadFile(img, folder);
                 mediaItems.add(MediaItem.builder()
                         .type("image")
@@ -65,7 +64,7 @@ public class ManagerUploadController {
 
         if (request.getVideos() != null) {
             for (MultipartFile vid : request.getVideos()) {
-                
+
                 Map<String, Object> result = (Map<String, Object>) cloudinaryService.uploadFile(vid, folder, "video");
                 mediaItems.add(MediaItem.builder()
                         .type("video")
@@ -83,6 +82,7 @@ public class ManagerUploadController {
                 .description(request.getDescription())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .location(request.getLocation())
                 .media(mediaItems)
                 .build();
 
@@ -96,8 +96,7 @@ public class ManagerUploadController {
     public ResponseEntity<ApiResponse<ManagerUpload>> updateUpload(
             @PathVariable String id,
             @ModelAttribute UpdateManagerUploadDto request,
-            @CurrentUser User user
-    ) throws IOException {
+            @CurrentUser User user) throws IOException {
 
         Optional<ManagerUpload> optionalUpload = managerUploadRepository.findById(id);
         if (optionalUpload.isEmpty()) {
@@ -113,15 +112,13 @@ public class ManagerUploadController {
         }
 
         List<MediaItem> updatedMedia = new ArrayList<>(upload.getMedia());
-System.out.println("Current media: " + updatedMedia);
+        System.out.println("Current media: " + updatedMedia);
         if (request.getDeleteMediaPublicIds() != null) {
             for (String publicId : request.getDeleteMediaPublicIds()) {
                 System.out.println("Deleting media with publicId: " + publicId);
                 cloudinaryService.deleteFile(publicId);
-               updatedMedia.removeIf(item -> 
-    item.getPublicId().equals(publicId) || 
-    item.getPublicId().endsWith("/" + publicId)
-);
+                updatedMedia.removeIf(item -> item.getPublicId().equals(publicId) ||
+                        item.getPublicId().endsWith("/" + publicId));
 
             }
         }
@@ -130,7 +127,7 @@ System.out.println("Current media: " + updatedMedia);
 
         if (request.getNewImages() != null) {
             for (MultipartFile img : request.getNewImages()) {
-                
+
                 Map<String, Object> result = (Map<String, Object>) cloudinaryService.uploadFile(img, folder, "image");
                 updatedMedia.add(MediaItem.builder()
                         .type("image")
@@ -142,7 +139,7 @@ System.out.println("Current media: " + updatedMedia);
 
         if (request.getNewVideos() != null) {
             for (MultipartFile vid : request.getNewVideos()) {
-                
+
                 Map<String, Object> result = (Map<String, Object>) cloudinaryService.uploadFile(vid, folder, "video");
                 updatedMedia.add(MediaItem.builder()
                         .type("video")
@@ -156,6 +153,7 @@ System.out.println("Current media: " + updatedMedia);
         upload.setDescription(request.getDescription());
         upload.setEventDate(request.getEventDate());
         upload.setMedia(updatedMedia);
+        upload.setLocation(request.getLocation());
         upload.setUpdatedAt(LocalDateTime.now());
 
         ManagerUpload saved = managerUploadRepository.save(upload);
@@ -163,62 +161,59 @@ System.out.println("Current media: " + updatedMedia);
         return ResponseEntity.ok(new ApiResponse<>(true, "Upload updated successfully", saved));
     }
 
-   @GetMapping("/list/{id}")
-public ResponseEntity<ApiResponse<Map<String, Object>>> listUploadsByManagerId(
-        @CurrentUser User user,
-        @PathVariable String id,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "createdAt") String sortBy,
-        @RequestParam(defaultValue = "desc") String direction
-) {
-    if (!"MANAGER".equals(user.getRole())) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(new ApiResponse<>(false, "Only managers can view uploads", null));
+    @GetMapping("/list/{id}")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> listUploadsByManagerId(
+            @CurrentUser User user,
+            @PathVariable String id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+        if (!"MANAGER".equals(user.getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, "Only managers can view uploads", null));
+        }
+
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<ManagerUpload> uploads = managerUploadRepository.findByManagerId(id, pageable);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("items", uploads.getContent());
+        response.put("currentPage", uploads.getNumber());
+        response.put("totalItems", uploads.getTotalElements());
+        response.put("totalPages", uploads.getTotalPages());
+
+        return ResponseEntity.ok(new ApiResponse<>(true, "Upload list fetched", response));
     }
 
-    Sort sort = direction.equalsIgnoreCase("asc")
-            ? Sort.by(sortBy).ascending()
-            : Sort.by(sortBy).descending();
+    @GetMapping("/detail/{id}")
+    public ResponseEntity<ApiResponse<ManagerUpload>> getUploadDetailById(
+            @CurrentUser User user,
+            @PathVariable String id) {
+        if (!"MANAGER".equals(user.getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, "Only managers can view uploads", null));
+        }
 
-    Pageable pageable = PageRequest.of(page, size, sort);
+        Optional<ManagerUpload> uploadOpt = managerUploadRepository.findById(id);
+        if (uploadOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, "Upload not found", null));
+        }
 
-    Page<ManagerUpload> uploads = managerUploadRepository.findByManagerId(id, pageable);
+        ManagerUpload upload = uploadOpt.get();
 
-    Map<String, Object> response = new HashMap<>();
-    response.put("items", uploads.getContent());
-    response.put("currentPage", uploads.getNumber());
-    response.put("totalItems", uploads.getTotalElements());
-    response.put("totalPages", uploads.getTotalPages());
+        if (!upload.getManagerId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, "You are not authorized to view this upload", null));
+        }
 
-    return ResponseEntity.ok(new ApiResponse<>(true, "Upload list fetched", response));
-}
-
-@GetMapping("/detail/{id}")
-public ResponseEntity<ApiResponse<ManagerUpload>> getUploadDetailById(
-        @CurrentUser User user,
-        @PathVariable String id
-) {
-    if (!"MANAGER".equals(user.getRole())) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(new ApiResponse<>(false, "Only managers can view uploads", null));
+        return ResponseEntity.ok(new ApiResponse<>(true, "Upload details fetched", upload));
     }
-
-    Optional<ManagerUpload> uploadOpt = managerUploadRepository.findById(id);
-    if (uploadOpt.isEmpty()) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ApiResponse<>(false, "Upload not found", null));
-    }
-
-    ManagerUpload upload = uploadOpt.get();
-
-    if (!upload.getManagerId().equals(user.getId())) {
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(new ApiResponse<>(false, "You are not authorized to view this upload", null));
-    }
-
-    return ResponseEntity.ok(new ApiResponse<>(true, "Upload details fetched", upload));
-}
-
 
 }

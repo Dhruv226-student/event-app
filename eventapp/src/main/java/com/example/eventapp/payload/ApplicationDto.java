@@ -28,7 +28,7 @@ public class ApplicationDto {
         private String insta;
 
         private String facebook;
-
+        
         private MultipartFile logo;
     }
 

@@ -29,7 +29,7 @@ public class ManagerUpload {
     private String description;
 
     private LocalDateTime eventDate; // 📅 Optional user-provided date
-
+    private String location; // 📍 Optional user-provided location
     @CreatedDate
     private LocalDateTime createdAt;
 

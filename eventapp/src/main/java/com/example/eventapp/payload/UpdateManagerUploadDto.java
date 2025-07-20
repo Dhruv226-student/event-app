@@ -16,5 +16,6 @@ public class UpdateManagerUploadDto {
     private List<MultipartFile> newImages;
     private List<MultipartFile> newVideos;
 
+    private String location; // 📍 Optional user-provided location
     private List<String> deleteMediaPublicIds; // Media to delete
 }

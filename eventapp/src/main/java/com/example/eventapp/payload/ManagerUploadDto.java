@@ -15,6 +15,8 @@ public class ManagerUploadDto {
     private String description;
     private LocalDateTime eventDate; // 📅 Optional user-provided date
 
+    private String location; // 📍 Optional user-provided location
     private List<MultipartFile> images;
     private List<MultipartFile> videos;
+    
 }

@@ -16,4 +16,6 @@ public interface ApplayMangerRepository extends MongoRepository<TeamApplication,
 
  Optional<TeamApplication> findByUserId(String userId);
     // Optional<TeamApplication> findByIdAndUserId(String id, String userId);
+    long countByStatus(String status);
+
 }
