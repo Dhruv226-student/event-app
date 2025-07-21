@@ -106,7 +106,7 @@ public class ApplayManngerController {
         // If APPROVED, create user and send email
        if (normalizedStatus.equals("APPROVED")) {
     String randomPassword = PasswordUtil.generateRandomPassword(10);
-
+System.out.println("Random Password: " + randomPassword);
     // 🔒 Save user
     User user = new User();
     user.setEmail(application.getEmail());

@@ -35,18 +35,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .cors(cors -> {}) // 👈 Enable CORS using Customizer
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/v1/auth/register", "/v1/auth/login","/v1/admin/auth/login", "/v1/common/*").permitAll()
+                        .requestMatchers("/v1/auth/register", "/v1/auth/login", "/v1/admin/auth/login", "/v1/common/*")
+                        .permitAll()
                         .anyRequest().authenticated())
-                         .exceptionHandling(exception -> exception
+                .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthEntryPoint) // ✅ Custom response for unauth
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
-    @Bean   
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
