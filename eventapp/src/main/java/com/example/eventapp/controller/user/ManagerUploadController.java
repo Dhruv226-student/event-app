@@ -179,35 +179,35 @@ public ResponseEntity<ApiResponse<ManagerUpload>> updateUpload(
     return ResponseEntity.ok(new ApiResponse<>(true, "Upload updated successfully", saved));
 }
 
-    @GetMapping("/list/{id}")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> listUploadsByManagerId(
-            @CurrentUser User user,
-            @PathVariable String id,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) {
-        if (!"MANAGER".equals(user.getRole())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiResponse<>(false, "Only managers can view uploads", null));
-        }
+   @GetMapping("/list")
+public ResponseEntity<ApiResponse<Map<String, Object>>> listUploadsByManagerId(
+        @CurrentUser User user,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "createdAt") String sortBy,
+        @RequestParam(defaultValue = "desc") String direction) {
 
-        Sort sort = direction.equalsIgnoreCase("asc")
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
-
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        Page<ManagerUpload> uploads = managerUploadRepository.findByManagerId(id, pageable);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("items", uploads.getContent());
-        response.put("currentPage", uploads.getNumber());
-        response.put("totalItems", uploads.getTotalElements());
-        response.put("totalPages", uploads.getTotalPages());
-
-        return ResponseEntity.ok(new ApiResponse<>(true, "Upload list fetched", response));
+    if (!"MANAGER".equals(user.getRole())) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new ApiResponse<>(false, "Only managers can view uploads", null));
     }
+
+    Sort sort = direction.equalsIgnoreCase("asc")
+            ? Sort.by(sortBy).ascending()
+            : Sort.by(sortBy).descending();
+
+    Pageable pageable = PageRequest.of(page, size, sort);
+
+    Page<ManagerUpload> uploads = managerUploadRepository.findByManagerId(user.getId(), pageable);
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("items", uploads.getContent());
+    response.put("currentPage", uploads.getNumber());
+    response.put("totalItems", uploads.getTotalElements());
+    response.put("totalPages", uploads.getTotalPages());
+
+    return ResponseEntity.ok(new ApiResponse<>(true, "Upload list fetched", response));
+}
 
     @GetMapping("/detail/{id}")
     public ResponseEntity<ApiResponse<ManagerUpload>> getUploadDetailById(
