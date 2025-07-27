@@ -15,6 +15,8 @@ public interface ManagerUploadRepository extends MongoRepository<ManagerUpload, 
     // ✅ Fix this line:
     long countByManagerId(Object managerId);
 
+    List<ManagerUpload> findByDeletedAtIsNull();
+
     List<ManagerUpload> findByType(String type);
     List<ManagerUpload> findByTypeAndManagerId(String type, String managerId);
     // List<ManagerUpload> findByTypeAndStatus(String type, String status);

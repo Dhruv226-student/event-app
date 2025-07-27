@@ -15,6 +15,8 @@ public class ApplicationDto {
 
         @NotBlank
         private String teamName;
+        @NotBlank
+        private String username;
 
         @NotBlank
         @Email

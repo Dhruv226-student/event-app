@@ -8,6 +8,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/v1/common")
@@ -26,4 +29,11 @@ public class FileUploadController {
             return ResponseEntity.internalServerError().body("Upload failed: " + e.getMessage());
         }
     }
+
+
+    @GetMapping("/video-project")
+    public String getMethodName(@RequestParam String param) {
+        return new String();
+    }
+    
 }

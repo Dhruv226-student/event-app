@@ -58,6 +58,10 @@ public class AuthController {
 public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
     User user = userRepository.findByEmail(request.getEmail())
             .orElse(null);
+        if(user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, "Email not found", null));
+        }
 
     if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

@@ -6,6 +6,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -20,8 +21,8 @@ public class ManagerUpload {
 
     @Id
     private String id;
+    private String managerId; 
 
-    private ObjectId managerId; // Who uploaded this
 
     private String type;
 
@@ -32,6 +33,8 @@ public class ManagerUpload {
     private String location; // 📍 Optional user-provided location
     @CreatedDate
     private LocalDateTime createdAt;
+
+    private LocalDateTime deletedAt;
 
     @LastModifiedDate
     private LocalDateTime updatedAt;

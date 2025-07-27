@@ -13,7 +13,7 @@ public interface UserRepository extends MongoRepository<User, String> {
     boolean existsByEmailAndRole(String email, String role);
     
     List<User> findByRole(String role); // ✅ Corrected method
-
+    List<User> findById(User id);
     // long countByRoleAndApproved(String role, boolean approved);
     Optional<User> findByResetToken(String resetToken);
     Optional<User> findByIdAndRole(String id, String role);

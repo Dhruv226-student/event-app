@@ -64,6 +64,7 @@ public class ApplayMannager {
 
         TeamApplication application = new TeamApplication();
         application.setTeamName(request.getTeamName());
+        application.setUsername(request.getUsername());
         application.setEmail(request.getEmail());
         application.setPortfolioUrl(request.getPortfolioUrl());
         application.setDescription(request.getDescription());

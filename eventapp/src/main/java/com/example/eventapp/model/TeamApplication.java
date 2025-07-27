@@ -23,7 +23,7 @@ public class TeamApplication {
 
     @Id
     private String id;
-    
+    private String username;
     private String teamName;
     private String email;
     private String description;
@@ -41,5 +41,6 @@ public class TeamApplication {
 
     private Date updatedAt;
 
+        private Date deletedAt; // For soft delete functionality
     // Getters and setters or use Lombok (@Getter, @Setter)
 }
